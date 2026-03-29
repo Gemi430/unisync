@@ -12,9 +12,11 @@ exports.registerStudent = async (req, res) => {
         // Save relative path for storage, ensuring forward slashes
         const paymentReceiptUrl = req.file ? req.file.path.replace(/\\/g, '/') : null;
 
-        if (!name || !email || !password || !stream || !paymentReceiptUrl) {
-            return res.status(400).json({ error: 'All fields including payment receipt are required' });
-        }
+        if (!name) return res.status(400).json({ error: 'Name is required' });
+        if (!email) return res.status(400).json({ error: 'Email is required' });
+        if (!password) return res.status(400).json({ error: 'Password is required' });
+        if (!stream) return res.status(400).json({ error: 'Stream is required' });
+        if (!paymentReceiptUrl) return res.status(400).json({ error: 'Payment receipt file is required (Cloudinary upload failed or no file selected)' });
 
         // Check if user exists
         const userExists = await db.query('SELECT * FROM users WHERE email = $1', [email]);

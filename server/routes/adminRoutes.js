@@ -18,6 +18,8 @@ router.put('/students/:studentId/status', adminController.updateStudentStatus);
 // Course and resource management routes
 const { upload } = require('../config/cloudinaryConfig');
 
+
+
 router.get('/courses', adminController.getAllCourses);
 router.post('/courses', adminController.createCourse);
 router.delete('/courses/:id', adminController.deleteCourse);

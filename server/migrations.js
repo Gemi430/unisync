@@ -16,6 +16,15 @@ const runMigrations = async () => {
         `);
         
         console.log('✅ Migration Check: "rich_content" is ready.');
+        
+        // 2. Add avatar_url and bio to users if missing
+        console.log('👤 Checking for profile columns in "users" table...');
+        await db.query(`
+            ALTER TABLE users 
+            ADD COLUMN IF NOT EXISTS avatar_url VARCHAR(255),
+            ADD COLUMN IF NOT EXISTS bio TEXT;
+        `);
+        console.log('✅ Migration Check: Profile columns are ready.');
     } catch (err) {
         console.error('❌ Migration failed:', err.message);
         throw err; // Re-throw to prevent server startup on failure

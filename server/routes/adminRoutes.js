@@ -8,7 +8,10 @@ const admin = require('../middleware/adminMiddleware');
 router.use(auth, admin);
 
 // Student management routes
-router.get('/students', adminController.getAllStudents);
+// User management routes
+router.get('/users', adminController.getAllUsers);
+router.post('/users', adminController.createUser);
+router.delete('/users/:id', adminController.deleteUser);
 router.get('/students/pending', adminController.getPendingStudents);
 router.put('/students/:studentId/status', adminController.updateStudentStatus);
 
@@ -17,9 +20,11 @@ const { upload } = require('../config/cloudinaryConfig');
 
 router.get('/courses', adminController.getAllCourses);
 router.post('/courses', adminController.createCourse);
+router.delete('/courses/:id', adminController.deleteCourse);
 router.get('/courses/:courseId/resources', adminController.getCourseResources);
 router.post('/resources', upload.single('resourceFile'), adminController.addResource);
 router.delete('/delete-resource/:id', adminController.deleteResource);
+
 router.get('/quizzes', adminController.getQuizzes);
 router.post('/quizzes', adminController.createQuiz);
 router.post('/questions', adminController.addQuestion);

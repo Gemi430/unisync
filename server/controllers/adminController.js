@@ -1,10 +1,12 @@
 const db = require('../config/db');
+const bcrypt = require('bcrypt');
 
-// Get all students
-exports.getAllStudents = async (req, res) => {
+
+// Get all users (students and admins)
+exports.getAllUsers = async (req, res) => {
     try {
         const result = await db.query(
-            "SELECT id, name, email, stream, status, created_at FROM users WHERE role = 'student' ORDER BY created_at DESC"
+            "SELECT id, name, email, role, stream, status, created_at FROM users ORDER BY role DESC, created_at DESC"
         );
         res.json(result.rows);
     } catch (err) {
@@ -12,6 +14,7 @@ exports.getAllStudents = async (req, res) => {
         res.status(500).send('Server Error');
     }
 };
+
 
 // Get all pending students
 exports.getPendingStudents = async (req, res) => {
@@ -88,6 +91,25 @@ exports.createCourse = async (req, res) => {
         res.status(500).send('Server Error');
     }
 };
+
+// Delete a course
+exports.deleteCourse = async (req, res) => {
+    try {
+        const { id } = req.params;
+        // Cascade delete will handle resources, quizzes, etc.
+        const result = await db.query("DELETE FROM courses WHERE id = $1 RETURNING *", [id]);
+        
+        if (result.rows.length === 0) {
+            return res.status(404).json({ error: 'Course not found' });
+        }
+        
+        res.json({ message: 'Course deleted successfully' });
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).send('Server Error');
+    }
+};
+
 
 // Add a resource to a course
 exports.addResource = async (req, res) => {
@@ -276,3 +298,57 @@ exports.getAdminAnalytics = async (req, res) => {
         res.status(500).send('Server Error');
     }
 };
+
+// Create a user (Admin only)
+exports.createUser = async (req, res) => {
+    try {
+        const { name, email, password, role, stream } = req.body;
+
+        if (!name || !email || !password || !role) {
+            return res.status(400).json({ error: 'All fields are required' });
+        }
+
+        const userExists = await db.query('SELECT * FROM users WHERE email = $1', [email]);
+        if (userExists.rows.length > 0) {
+            return res.status(400).json({ error: 'User already exists' });
+        }
+
+        const salt = await bcrypt.genSalt(10);
+        const passwordHash = await bcrypt.hash(password, salt);
+
+        const result = await db.query(
+            'INSERT INTO users (name, email, password_hash, role, stream, status) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id, name, email, role, stream, status',
+            [name, email, passwordHash, role, stream || 'natural', 'approved']
+        );
+
+        res.status(201).json(result.rows[0]);
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).send('Server Error');
+    }
+};
+
+// Delete a user
+exports.deleteUser = async (req, res) => {
+    try {
+        const { id } = req.params;
+        
+        // Prevent admin from deleting themselves
+        if (req.user && parseInt(id) === req.user.id) {
+            return res.status(400).json({ error: 'You cannot delete your own account' });
+        }
+
+        const result = await db.query("DELETE FROM users WHERE id = $1 RETURNING *", [id]);
+        
+        if (result.rows.length === 0) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+        
+        res.json({ message: 'User deleted successfully' });
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).send('Server Error');
+    }
+};
+
+

@@ -538,7 +538,7 @@ class _StudentDashboardState extends State<StudentDashboard> {
                                   child: const Text('Next', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                                 )
                               : ElevatedButton(
-                                  onPressed: (_answers.length == _questions.length) ? _handleSubmitQuiz : null,
+                                  onPressed: (_answers.length == _questions.length && !_isLoadingSubView) ? _handleSubmitQuiz : null,
                                   style: ElevatedButton.styleFrom(
                                     backgroundColor: const Color(0xFF0F172A),
                                     foregroundColor: Colors.white,
@@ -546,7 +546,9 @@ class _StudentDashboardState extends State<StudentDashboard> {
                                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                                     disabledBackgroundColor: Colors.grey.shade300,
                                   ),
-                                  child: const Text('Submit Quiz', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                                  child: _isLoadingSubView 
+                                    ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                                    : const Text('Submit Quiz', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                                 ),
                           )
                         ],
@@ -631,7 +633,7 @@ class _StudentDashboardState extends State<StudentDashboard> {
                   ),
                   IconButton(
                     icon: const Icon(Icons.open_in_new, color: AppTheme.brand600),
-                    onPressed: () => _openResource(resource),
+                    onPressed: _isLoadingSubView ? null : () => _openResource(resource),
                   )
                 ],
               ),
@@ -672,14 +674,16 @@ class _StudentDashboardState extends State<StudentDashboard> {
                     ),
                   ),
                   ElevatedButton(
-                    onPressed: () => _handleStartQuiz(quiz['id'].toString()),
+                    onPressed: _isLoadingSubView ? null : () => _handleStartQuiz(quiz['id'].toString()),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppTheme.brand100,
                       foregroundColor: AppTheme.brand700,
                       elevation: 0,
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                     ),
-                    child: const Text('Start Quiz', style: TextStyle(fontWeight: FontWeight.bold)),
+                    child: _isLoadingSubView 
+                      ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(color: AppTheme.brand700, strokeWidth: 2))
+                      : const Text('Start Quiz', style: TextStyle(fontWeight: FontWeight.bold)),
                   )
                 ],
               ),
@@ -854,14 +858,16 @@ class _StudentDashboardState extends State<StudentDashboard> {
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
-                      onPressed: () => _fetchCourseDetails(course['id'].toString()),
+                      onPressed: _isLoadingSubView ? null : () => _fetchCourseDetails(course['id'].toString()),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFF0F172A),
                         foregroundColor: Colors.white,
                         padding: const EdgeInsets.symmetric(vertical: 12),
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                       ),
-                      child: const Text('View Content', style: TextStyle(fontWeight: FontWeight.bold)),
+                      child: _isLoadingSubView 
+                        ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                        : const Text('View Content', style: TextStyle(fontWeight: FontWeight.bold)),
                     ),
                   )
                 ],

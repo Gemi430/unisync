@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Menu, X, Users, BookOpen, LogOut, CheckCircle, XCircle, BarChart3, UserCircle, Settings, Bell, Trash2, Loader2, ChevronDown, ChevronUp } from 'lucide-react';
+import { Menu, X, Users, BookOpen, LogOut, CheckCircle, XCircle, BarChart3, UserCircle, Settings, Bell, Trash2, Loader2, ChevronDown, ChevronUp, UserPlus, UserCog, UserCheck } from 'lucide-react';
+
 import { useNotifications } from '../context/NotificationContext';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from 'recharts';
 import axios from 'axios';
@@ -13,8 +14,9 @@ function AdminDashboard() {
   const [activeTab, setActiveTab] = useState(() => localStorage.getItem('adminActiveTab') || 'analytics'); // 'approvals', 'students', 'courses', 'quizzes', 'analytics'
   const [resourceFile, setResourceFile] = useState(null);
   const [pendingStudents, setPendingStudents] = useState([]);
-  const [allStudents, setAllStudents] = useState([]);
+  const [allUsers, setAllUsers] = useState([]);
   const [courses, setCourses] = useState([]);
+
   const [quizzes, setQuizzes] = useState([]);
   const [analytics, setAnalytics] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
@@ -25,7 +27,17 @@ function AdminDashboard() {
   const [newResource, setNewResource] = useState({ course_id: '', title: '', description: '', file_url: '', type: 'pdf' });
   const [newQuiz, setNewQuiz] = useState({ course_id: '', title: '', description: '' });
   const [newQuestion, setNewQuestion] = useState({ quiz_id: '', question_text: '', optionA: '', optionB: '', optionC: '', optionD: '', correct_answer: 'A' });
-  const [deleteTarget, setDeleteTarget] = useState(null); // { id, courseId, type: 'resource'|'course' }
+  const [newUser, setNewUser] = useState({ name: '', email: '', password: '', role: 'student', stream: 'natural' });
+  const [deleteTarget, setDeleteTarget] = useState(null); // { id, courseId, type: 'resource'|'course'|'user' }
+
+  const [loadingCourse, setLoadingCourse] = useState(false);
+  const [loadingResource, setLoadingResource] = useState(false);
+  const [loadingQuiz, setLoadingQuiz] = useState(false);
+  const [loadingQuestion, setLoadingQuestion] = useState(false);
+  const [loadingUser, setLoadingUser] = useState(false);
+  const [loadingApproval, setLoadingApproval] = useState({}); // { studentId: true/false }
+  const [loadingDeletion, setLoadingDeletion] = useState({}); // { id: true/false }
+
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -35,16 +47,26 @@ function AdminDashboard() {
       navigate('/login');
     } else {
       fetchPendingStudents(token);
-      fetchAllStudents(token);
       fetchCourses(token);
       fetchQuizzes(token);
       fetchAnalytics(token);
+      fetchAllUsers(token);
     }
+
   }, [navigate]);
 
   useEffect(() => {
     localStorage.setItem('adminActiveTab', activeTab);
   }, [activeTab]);
+
+  const filteredItems = (items) => items.filter(item => 
+    item.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    item.description?.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+  
+  const filteredAnalytics = analytics?.performance?.filter(perf => 
+    perf.title?.toLowerCase().includes(searchTerm.toLowerCase())
+  ) || [];
 
   const fetchAnalytics = async (token) => {
     try {
@@ -111,6 +133,7 @@ function AdminDashboard() {
 
   const handleCreateQuiz = async (e) => {
     e.preventDefault();
+    setLoadingQuiz(true);
     try {
       const token = localStorage.getItem('token');
       await axios.post('/api/admin/quizzes', newQuiz, {
@@ -121,11 +144,14 @@ function AdminDashboard() {
       fetchQuizzes(token);
     } catch (err) {
       toast.error('Failed to create quiz');
+    } finally {
+      setLoadingQuiz(false);
     }
   };
 
   const handleAddQuestion = async (e) => {
     e.preventDefault();
+    setLoadingQuestion(true);
     try {
       const token = localStorage.getItem('token');
       const options = [newQuestion.optionA, newQuestion.optionB, newQuestion.optionC, newQuestion.optionD];
@@ -143,6 +169,8 @@ function AdminDashboard() {
       setNewQuestion({ quiz_id: newQuestion.quiz_id, question_text: '', optionA: '', optionB: '', optionC: '', optionD: '', correct_answer: 'A' });
     } catch (err) {
       toast.error('Failed to add question');
+    } finally {
+      setLoadingQuestion(false);
     }
   };
 
@@ -159,18 +187,39 @@ function AdminDashboard() {
 
   const handleCreateCourse = async (e) => {
     e.preventDefault();
+    setLoadingCourse(true);
     try {
       const token = localStorage.getItem('token');
       await axios.post('/api/admin/courses', newCourse, {
         headers: { Authorization: `Bearer ${token}` }
       });
       toast.success('Course created successfully!');
-      setNewCourse({ title: '', description: '', stream_target: 'both' });
+      setNewCourse({ title: '', description: '', stream_target: 'both', rich_content: '' });
       fetchCourses(token);
     } catch (err) {
       toast.error('Failed to create course');
+    } finally {
+      setLoadingCourse(false);
     }
   };
+
+  const handleDeleteCourse = async (courseId) => {
+    setLoadingDeletion(prev => ({ ...prev, [courseId]: true }));
+    try {
+      const token = localStorage.getItem('token');
+      await axios.delete(`/api/admin/courses/${courseId}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      toast.success('Course deleted');
+      setDeleteTarget(null);
+      fetchCourses(token);
+    } catch (err) {
+      toast.error('Failed to delete course');
+    } finally {
+      setLoadingDeletion(prev => ({ ...prev, [courseId]: false }));
+    }
+  };
+
 
   const handleAddResource = async (e) => {
     e.preventDefault();
@@ -184,6 +233,7 @@ function AdminDashboard() {
       return;
     }
 
+    setLoadingResource(true);
     try {
       const token = localStorage.getItem('token');
       const formData = new FormData();
@@ -211,6 +261,8 @@ function AdminDashboard() {
       setResourceFile(null);
     } catch (err) {
       toast.error('Failed to add resource');
+    } finally {
+      setLoadingResource(false);
     }
   };
 
@@ -225,18 +277,55 @@ function AdminDashboard() {
     }
   };
 
-  const fetchAllStudents = async (token) => {
+  const fetchAllUsers = async (token) => {
     try {
-      const res = await axios.get('/api/admin/students', {
+      const res = await axios.get('/api/admin/users', {
         headers: { Authorization: `Bearer ${token}` }
       });
-      setAllStudents(res.data);
+      setAllUsers(res.data);
     } catch (err) {
       console.error(err);
     }
   };
 
+  const handleCreateUser = async (e) => {
+    e.preventDefault();
+    setLoadingUser(true);
+    try {
+      const token = localStorage.getItem('token');
+      await axios.post('/api/admin/users', newUser, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      toast.success('User created successfully!');
+      setNewUser({ name: '', email: '', password: '', role: 'student', stream: 'natural' });
+      fetchAllUsers(token);
+    } catch (err) {
+      toast.error(err.response?.data?.error || 'Failed to create user');
+    } finally {
+      setLoadingUser(false);
+    }
+  };
+
+  const handleDeleteUser = async (userId) => {
+    setLoadingDeletion(prev => ({ ...prev, [userId]: true }));
+    try {
+      const token = localStorage.getItem('token');
+      await axios.delete(`/api/admin/users/${userId}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      toast.success('User deleted');
+      setDeleteTarget(null);
+      fetchAllUsers(token);
+    } catch (err) {
+      toast.error(err.response?.data?.error || 'Failed to delete user');
+    } finally {
+      setLoadingDeletion(prev => ({ ...prev, [userId]: false }));
+    }
+  };
+
+
   const handleApproval = async (studentId, status) => {
+    setLoadingApproval(prev => ({ ...prev, [studentId]: true }));
     try {
       const token = localStorage.getItem('token');
       await axios.put(`/api/admin/students/${studentId}/status`, { status }, {
@@ -244,8 +333,11 @@ function AdminDashboard() {
       });
       toast.success(`Student ${status} successfully!`);
       fetchPendingStudents(token); // refresh list
+      fetchAllUsers(token); // refresh full list too
     } catch (err) {
       toast.error('Failed to update status');
+    } finally {
+      setLoadingApproval(prev => ({ ...prev, [studentId]: false }));
     }
   };
 
@@ -314,22 +406,13 @@ function AdminDashboard() {
           >
             <BarChart3 className="w-5 h-5" /> Progress
           </button>
-          <button 
-            onClick={() => {setActiveTab('approvals'); setIsSidebarOpen(false);}}
-            className={`flex items-center gap-3 w-full px-4 py-3 rounded-xl transition-colors ${activeTab === 'approvals' ? 'bg-brand-100 text-brand-700 font-semibold' : 'text-slate-600 hover:bg-slate-100'}`}
-          >
-            <CheckCircle className="w-5 h-5" /> Approvals
+          <button onClick={() => { setActiveTab('approvals'); localStorage.setItem('adminActiveTab', 'approvals'); }} className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${activeTab === 'approvals' ? 'bg-brand-600 text-white' : 'text-slate-600 hover:bg-slate-100'}`}>
+            <UserCheck className="w-5 h-5" /> Reg Approvals
           </button>
-          <button 
-            onClick={() => {setActiveTab('students'); setIsSidebarOpen(false);}}
-            className={`flex items-center gap-3 w-full px-4 py-3 rounded-xl transition-colors ${activeTab === 'students' ? 'bg-brand-100 text-brand-700 font-semibold' : 'text-slate-600 hover:bg-slate-100'}`}
-          >
-            <Users className="w-5 h-5" /> Students
+          <button onClick={() => { setActiveTab('students'); localStorage.setItem('adminActiveTab', 'students'); }} className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${activeTab === 'students' ? 'bg-brand-600 text-white' : 'text-slate-600 hover:bg-slate-100'}`}>
+            <UserCog className="w-5 h-5" /> User Management
           </button>
-          <button 
-            onClick={() => {setActiveTab('courses'); setIsSidebarOpen(false);}}
-            className={`flex items-center gap-3 w-full px-4 py-3 rounded-xl transition-colors ${activeTab === 'courses' ? 'bg-brand-100 text-brand-700 font-semibold' : 'text-slate-600 hover:bg-slate-100'}`}
-          >
+          <button onClick={() => { setActiveTab('courses'); localStorage.setItem('adminActiveTab', 'courses'); }} className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${activeTab === 'courses' ? 'bg-brand-600 text-white' : 'text-slate-600 hover:bg-slate-100'}`}>
             <BookOpen className="w-5 h-5" /> Courses
           </button>
           <button 
@@ -363,7 +446,7 @@ function AdminDashboard() {
         </div>
         {activeTab === 'approvals' && (
           <div>
-            <h2 className="text-3xl font-extrabold text-slate-900 mb-2">Pending Approvals</h2>
+            <h2 className="text-3xl font-extrabold text-slate-900 mb-2">Registration Approvals</h2>
             <p className="text-slate-500 mb-8">Review new student applications and payment receipts.</p>
             
             <div className="grid grid-cols-1 gap-6">
@@ -407,11 +490,21 @@ function AdminDashboard() {
                           );
                        })()}
                       <div className="flex gap-2">
-                        <button onClick={() => handleApproval(student.id, 'approved')} className="flex items-center gap-1 bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
-                          <CheckCircle className="w-4 h-4" /> Approve
+                        <button 
+                          disabled={loadingApproval[student.id]}
+                          onClick={() => handleApproval(student.id, 'approved')} 
+                          className={`flex items-center gap-1 ${loadingApproval[student.id] ? 'bg-green-700 opacity-50' : 'bg-green-500 hover:bg-green-600'} text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors`}
+                        >
+                          {loadingApproval[student.id] ? <Loader2 className="w-4 h-4 animate-spin text-white" /> : <CheckCircle className="w-4 h-4" />} 
+                          Approve
                         </button>
-                        <button onClick={() => handleApproval(student.id, 'rejected')} className="flex items-center gap-1 bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
-                          <XCircle className="w-4 h-4" /> Reject
+                        <button 
+                          disabled={loadingApproval[student.id]}
+                          onClick={() => handleApproval(student.id, 'rejected')} 
+                          className={`flex items-center gap-1 ${loadingApproval[student.id] ? 'bg-red-700 opacity-50' : 'bg-red-500 hover:bg-red-600'} text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors`}
+                        >
+                          {loadingApproval[student.id] ? <Loader2 className="w-4 h-4 animate-spin text-white" /> : <XCircle className="w-4 h-4" />} 
+                          Reject
                         </button>
                       </div>
                     </div>
@@ -424,63 +517,124 @@ function AdminDashboard() {
 
         {activeTab === 'students' && (
           <div>
-            <h2 className="text-3xl font-extrabold text-slate-900 mb-2">Student Directory</h2>
-            <p className="text-slate-500 mb-8">View and manage all registered students across all streams.</p>
-            
-            <div className="glass rounded-3xl overflow-hidden border border-brand-100 shadow-xl bg-white/70">
-              <table className="w-full text-left border-collapse">
-                <thead>
-                  <tr className="bg-slate-50/80 border-b border-brand-100">
-                    <th className="px-6 py-4 text-sm font-bold text-slate-700">Student</th>
-                    <th className="px-6 py-4 text-sm font-bold text-slate-700">Stream</th>
-                    <th className="px-6 py-4 text-sm font-bold text-slate-700">Status</th>
-                    <th className="px-6 py-4 text-sm font-bold text-slate-700 text-right">Action</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100">
-                  {allStudents.filter(s => 
-                    s.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                    s.email.toLowerCase().includes(searchTerm.toLowerCase())
-                  ).length === 0 ? (
-                    <tr>
-                      <td colSpan="4" className="px-6 py-12 text-center text-slate-500">No students found matching your search.</td>
+            <div className="flex justify-between items-center mb-6">
+              <div>
+                <h2 className="text-3xl font-extrabold text-slate-900 mb-2">User Management</h2>
+                <p className="text-slate-500">Add, view, and manage all users (Students & Admins).</p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
+              {/* Add User Form */}
+              <div className="xl:col-span-1 glass p-6 rounded-2xl h-fit sticky top-24">
+                <h3 className="text-xl font-bold text-slate-800 mb-4 flex items-center gap-2">
+                  <UserPlus className="w-5 h-5 text-brand-600" /> Add New User
+                </h3>
+                <form onSubmit={handleCreateUser} className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-1">Full Name</label>
+                    <input type="text" required value={newUser.name} onChange={e => setNewUser({...newUser, name: e.target.value})} className="w-full px-4 py-2 rounded-xl border border-slate-200 outline-none bg-white/50" placeholder="John Doe" />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-1">Email Address</label>
+                    <input type="email" required value={newUser.email} onChange={e => setNewUser({...newUser, email: e.target.value})} className="w-full px-4 py-2 rounded-xl border border-slate-200 outline-none bg-white/50" placeholder="john@example.com" />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-1">Password</label>
+                    <input type="password" required value={newUser.password} onChange={e => setNewUser({...newUser, password: e.target.value})} className="w-full px-4 py-2 rounded-xl border border-slate-200 outline-none bg-white/50" placeholder="••••••••" />
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-slate-700 mb-1">Role</label>
+                      <select value={newUser.role} onChange={e => setNewUser({...newUser, role: e.target.value})} className="w-full px-4 py-2 rounded-xl border border-slate-200 outline-none bg-white/50">
+                        <option value="student">Student</option>
+                        <option value="admin">Admin</option>
+                      </select>
+                    </div>
+                    {newUser.role === 'student' && (
+                      <div>
+                        <label className="block text-sm font-medium text-slate-700 mb-1">Stream</label>
+                        <select value={newUser.stream} onChange={e => setNewUser({...newUser, stream: e.target.value})} className="w-full px-4 py-2 rounded-xl border border-slate-200 outline-none bg-white/50">
+                          <option value="natural">Natural</option>
+                          <option value="social">Social</option>
+                        </select>
+                      </div>
+                    )}
+                  </div>
+                  <button 
+                    type="submit" 
+                    disabled={loadingUser}
+                    className={`w-full ${loadingUser ? 'bg-brand-900 cursor-not-allowed' : 'bg-brand-600 hover:bg-brand-700'} text-white font-semibold py-3 rounded-xl transition-all flex items-center justify-center gap-2`}
+                  >
+                    {loadingUser && <Loader2 className="w-5 h-5 animate-spin text-white" />}
+                    {loadingUser ? 'Creating...' : 'Create User'}
+                  </button>
+                </form>
+              </div>
+
+              {/* User Table */}
+              <div className="xl:col-span-2 glass rounded-3xl overflow-hidden border border-brand-100 shadow-xl bg-white/70">
+                <table className="w-full text-left border-collapse">
+                  <thead>
+                    <tr className="bg-slate-50/80 border-b border-brand-100">
+                      <th className="px-6 py-4 text-sm font-bold text-slate-700">User</th>
+                      <th className="px-6 py-4 text-sm font-bold text-slate-700">Role/Stream</th>
+                      <th className="px-6 py-4 text-sm font-bold text-slate-700 text-right">Actions</th>
                     </tr>
-                  ) : (
-                    allStudents.filter(s => 
-                      s.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                      s.email.toLowerCase().includes(searchTerm.toLowerCase())
-                    ).map(student => (
-                      <tr key={student.id} className="hover:bg-brand-50/30 transition-colors group">
-                        <td className="px-6 py-4">
-                          <div className="font-bold text-slate-800">{student.name}</div>
-                          <div className="text-xs text-slate-500">{student.email}</div>
-                        </td>
-                        <td className="px-6 py-4">
-                          <span className={`px-2 py-1 rounded text-[10px] font-bold uppercase ${student.stream === 'natural' ? 'bg-accent-100 text-accent-700' : 'bg-social-100 text-social-700'}`}>
-                            {student.stream}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4">
-                          <span className={`px-2 py-1 rounded text-[10px] font-bold uppercase ${student.status === 'approved' ? 'bg-green-100 text-green-700' : student.status === 'pending' ? 'bg-yellow-100 text-yellow-700' : 'bg-red-100 text-red-700'}`}>
-                            {student.status}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4 text-right">
-                          <button 
-                            onClick={async () => {
-                                await handleApproval(student.id, student.status === 'approved' ? 'rejected' : 'approved');
-                                fetchAllStudents(localStorage.getItem('token'));
-                            }}
-                            className="text-brand-600 hover:text-brand-900 text-sm font-bold transition-colors"
-                          >
-                            {student.status === 'approved' ? 'Revoke' : 'Approve'}
-                          </button>
-                        </td>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100">
+                    {allUsers.filter(u => 
+                      u.name?.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                      u.email?.toLowerCase().includes(searchTerm.toLowerCase())
+                    ).length === 0 ? (
+                      <tr>
+                        <td colSpan="3" className="px-6 py-12 text-center text-slate-500">No users found matching your search.</td>
                       </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
+                    ) : (
+                      allUsers.filter(u => 
+                        u.name?.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                        u.email?.toLowerCase().includes(searchTerm.toLowerCase())
+                      ).map(user => (
+                        <tr key={user.id} className="hover:bg-brand-50/30 transition-colors group">
+                          <td className="px-6 py-4">
+                            <div className="font-bold text-slate-800">{user.name}</div>
+                            <div className="text-xs text-slate-500">{user.email}</div>
+                          </td>
+                          <td className="px-6 py-4">
+                            <div className="flex flex-col gap-1">
+                              <span className={`w-fit px-2 py-0.5 rounded text-[10px] font-bold uppercase ${user.role === 'admin' ? 'bg-purple-100 text-purple-700' : 'bg-blue-100 text-blue-700'}`}>
+                                {user.role}
+                              </span>
+                              {user.role === 'student' && (
+                                <span className="text-[10px] text-slate-400 ml-1 italic font-medium">({user.stream})</span>
+                              )}
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 text-right">
+                            <div className="flex justify-end gap-2">
+                              {user.role === 'student' && (
+                                <button 
+                                  onClick={() => handleApproval(user.id, user.status === 'approved' ? 'rejected' : 'approved')}
+                                  className={`text-xs px-2 py-1 rounded font-bold transition-colors ${user.status === 'approved' ? 'text-red-600 hover:bg-red-50' : 'text-green-600 hover:bg-green-50'}`}
+                                >
+                                  {user.status === 'approved' ? 'Revoke' : 'Approve'}
+                                </button>
+                              )}
+                              <button 
+                                onClick={() => setDeleteTarget({ id: user.id, title: user.name, type: 'user' })}
+                                className="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all"
+                                title="Delete User"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
             </div>
           </div>
         )}
@@ -515,7 +669,14 @@ function AdminDashboard() {
                       <option value="social">Social Stream</option>
                     </select>
                   </div>
-                  <button type="submit" className="w-full bg-brand-600 hover:bg-brand-700 text-white font-semibold py-3 rounded-xl transition-all">Create Course</button>
+                  <button 
+                    type="submit" 
+                    disabled={loadingCourse}
+                    className={`w-full ${loadingCourse ? 'bg-brand-900 cursor-not-allowed' : 'bg-brand-600 hover:bg-brand-700'} text-white font-semibold py-3 rounded-xl transition-all flex items-center justify-center gap-2`}
+                  >
+                    {loadingCourse && <Loader2 className="w-5 h-5 animate-spin text-white" />}
+                    {loadingCourse ? 'Creating...' : 'Create Course'}
+                  </button>
                 </form>
               </div>
 
@@ -565,7 +726,14 @@ function AdminDashboard() {
                     <label className="block text-sm font-medium text-slate-700 mb-1">Description</label>
                     <textarea value={newResource.description} onChange={e => setNewResource({...newResource, description: e.target.value})} className="w-full px-4 py-2 rounded-xl border border-slate-200 outline-none bg-white/50 h-20"></textarea>
                   </div>
-                  <button type="submit" className="w-full bg-slate-800 hover:bg-slate-900 text-white font-semibold py-3 rounded-xl transition-all">Add Resource</button>
+                  <button 
+                    type="submit" 
+                    disabled={loadingResource}
+                    className={`w-full ${loadingResource ? 'bg-slate-700 cursor-not-allowed' : 'bg-slate-800 hover:bg-slate-900'} text-white font-semibold py-3 rounded-xl transition-all flex items-center justify-center gap-2`}
+                  >
+                    {loadingResource && <Loader2 className="w-5 h-5 animate-spin text-white" />}
+                    {loadingResource ? 'Adding...' : 'Add Resource'}
+                  </button>
                 </form>
               </div>
             </div>
@@ -576,57 +744,72 @@ function AdminDashboard() {
                 {courses.filter(c => c.title.toLowerCase().includes(searchTerm.toLowerCase())).length === 0 ? (
                     <p className="text-slate-500">No matching courses found.</p>
                 ) : (
-                    courses.filter(c => c.title.toLowerCase().includes(searchTerm.toLowerCase())).map(course => (
-                    <div key={course.id} className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
-                        <div className="flex justify-between items-start">
-                          <div>
-                            <h4 className="font-bold text-slate-800">{course.title}</h4>
-                            <p className="text-sm text-slate-600 mt-1 line-clamp-2">{course.description}</p>
-                            <span className="inline-block mt-3 px-2 py-1 bg-slate-200 text-slate-700 rounded text-xs font-semibold uppercase">{course.stream_target}</span>
+                      courses.filter(c => c.title.toLowerCase().includes(searchTerm.toLowerCase())).map(course => (
+                      <div key={course.id} className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col">
+                          <div className="p-5 flex justify-between items-start">
+                              <div className="flex-1 min-w-0 pr-4">
+                                  <h4 className="font-bold text-slate-800 truncate">{course.title}</h4>
+                                  <p className="text-xs text-slate-500 mt-1 line-clamp-2">{course.description}</p>
+                                  <div className="flex items-center gap-2 mt-3">
+                                    <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${course.stream_target === 'natural' ? 'bg-accent-100 text-accent-700' : course.stream_target === 'social' ? 'bg-social-100 text-social-700' : 'bg-brand-100 text-brand-700'}`}>
+                                      {course.stream_target}
+                                    </span>
+                                  </div>
+                              </div>
+                              <div className="flex gap-1">
+                                <button 
+                                  onClick={() => toggleCourseResources(course.id)}
+                                  className={`p-2 rounded-lg transition-all ${expandedCourses.includes(course.id) ? 'bg-brand-50 text-brand-600' : 'text-slate-400 hover:bg-slate-50'}`}
+                                  title="View Resources"
+                                >
+                                  {expandedCourses.includes(course.id) ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
+                                </button>
+                                <button 
+                                  onClick={() => setDeleteTarget({ id: course.id, title: course.title, type: 'course' })}
+                                  className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all"
+                                  title="Delete Course"
+                                >
+                                  <Trash2 className="w-5 h-5" />
+                                </button>
+                              </div>
                           </div>
-                          <button 
-                            onClick={() => toggleCourseResources(course.id)}
-                            className="p-2 hover:bg-slate-100 rounded-lg transition-colors flex items-center gap-1 text-slate-500 hover:text-brand-600"
-                            title="Manage Resources"
-                          >
-                            <span className="text-xs font-semibold">Resources</span>
-                            {expandedCourses.includes(course.id) ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-                          </button>
-                        </div>
 
-                        {expandedCourses.includes(course.id) && (
-                          <div className="mt-4 pt-4 border-t border-slate-100">
-                             {loadingResources[course.id] ? (
-                               <div className="flex justify-center py-4">
-                                 <Loader2 className="w-6 h-6 animate-spin text-brand-500" />
-                               </div>
-                             ) : (
-                               <div className="space-y-3">
-                                 {courseResources[course.id]?.length === 0 ? (
-                                   <p className="text-center text-xs text-slate-400 py-2">No resources uploaded yet.</p>
+                          {expandedCourses.includes(course.id) && (
+                            <div className="px-5 pb-5 border-t border-slate-50 bg-slate-50/30">
+                               <div className="pt-4">
+                                 <h5 className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Modules & Resources</h5>
+                                 {loadingResources[course.id] ? (
+                                   <div className="flex justify-center py-4">
+                                     <Loader2 className="w-6 h-6 animate-spin text-brand-500" />
+                                   </div>
                                  ) : (
-                                   courseResources[course.id]?.map(res => (
-                                     <div key={res.id} className="flex justify-between items-center p-3 bg-slate-50 rounded-xl hover:bg-slate-100 transition-colors">
-                                       <div className="min-w-0 flex-1 pr-4">
-                                         <p className="text-sm font-bold text-slate-800 truncate">{res.title}</p>
-                                         <p className="text-[10px] text-slate-500 truncate">{res.type}</p>
-                                       </div>
-                                       <button 
-                                         onClick={() => setDeleteTarget({ id: res.id, courseId: course.id, title: res.title, type: 'resource' })}
-                                         className="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all"
-                                         title="Delete Resource"
-                                       >
-                                         <Trash2 className="w-4 h-4" />
-                                       </button>
-                                     </div>
-                                   ))
+                                   <div className="space-y-2">
+                                     {courseResources[course.id]?.length === 0 ? (
+                                       <p className="text-center text-xs text-slate-400 py-4 italic">No resources uploaded yet.</p>
+                                     ) : (
+                                       courseResources[course.id]?.map(res => (
+                                         <div key={res.id} className="flex justify-between items-center p-3 bg-white border border-slate-100 rounded-xl hover:shadow-sm transition-all group">
+                                           <div className="min-w-0 flex-1 pr-4">
+                                             <p className="text-sm font-bold text-slate-800 truncate">{res.title}</p>
+                                             <p className="text-[10px] text-slate-500 uppercase">{res.type}</p>
+                                           </div>
+                                           <button 
+                                             onClick={() => setDeleteTarget({ id: res.id, courseId: course.id, title: res.title, type: 'resource' })}
+                                             className="p-1.5 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all opacity-0 group-hover:opacity-100"
+                                             title="Delete Resource"
+                                           >
+                                             <Trash2 className="w-4 h-4" />
+                                           </button>
+                                         </div>
+                                       ))
+                                     )}
+                                   </div>
                                  )}
                                </div>
-                             )}
-                          </div>
-                        )}
-                    </div>
-                    ))
+                            </div>
+                          )}
+                      </div>
+                      ))
                 )}
               </div>
             </div>
@@ -660,7 +843,14 @@ function AdminDashboard() {
                     <label className="block text-sm font-medium text-slate-700 mb-1">Description</label>
                     <textarea required value={newQuiz.description} onChange={e => setNewQuiz({...newQuiz, description: e.target.value})} className="w-full px-4 py-2 rounded-xl border border-slate-200 outline-none bg-white/50 h-24"></textarea>
                   </div>
-                  <button type="submit" className="w-full bg-brand-600 hover:bg-brand-700 text-white font-semibold py-3 rounded-xl transition-all">Create Quiz</button>
+                  <button 
+                    type="submit" 
+                    disabled={loadingQuiz}
+                    className={`w-full ${loadingQuiz ? 'bg-brand-900 cursor-not-allowed' : 'bg-brand-600 hover:bg-brand-700'} text-white font-semibold py-3 rounded-xl transition-all flex items-center justify-center gap-2`}
+                  >
+                    {loadingQuiz && <Loader2 className="w-5 h-5 animate-spin text-white" />}
+                    {loadingQuiz ? 'Creating...' : 'Create Quiz'}
+                  </button>
                 </form>
               </div>
 
@@ -704,7 +894,14 @@ function AdminDashboard() {
                       <option value="D">Option D</option>
                     </select>
                   </div>
-                  <button type="submit" className="w-full bg-slate-800 hover:bg-slate-900 text-white font-semibold py-3 rounded-xl transition-all">Save Question</button>
+                  <button 
+                    type="submit" 
+                    disabled={loadingQuestion}
+                    className={`w-full ${loadingQuestion ? 'bg-slate-700 cursor-not-allowed' : 'bg-slate-800 hover:bg-slate-900'} text-white font-semibold py-3 rounded-xl transition-all flex items-center justify-center gap-2`}
+                  >
+                    {loadingQuestion && <Loader2 className="w-5 h-5 animate-spin text-white" />}
+                    {loadingQuestion ? 'Saving...' : 'Save Question'}
+                  </button>
                 </form>
               </div>
             </div>
@@ -819,33 +1016,38 @@ function AdminDashboard() {
       </main>
       {/* Custom Delete Confirmation Modal */}
       {deleteTarget && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" onClick={() => setDeleteTarget(null)} />
-          <div className="glass bg-white max-w-sm w-full p-8 rounded-3xl shadow-2xl relative animate-zoom-in text-center">
-            <div className="w-16 h-16 bg-red-100 text-red-600 rounded-full flex items-center justify-center mx-auto mb-6">
-              <Trash2 className="w-8 h-8" />
-            </div>
-            <h3 className="text-xl font-bold text-slate-900 mb-2">Delete {deleteTarget.type === 'resource' ? 'Resource' : 'Course'}?</h3>
-            <p className="text-slate-500 text-sm mb-8">
-              Are you sure you want to delete <span className="font-bold text-slate-700">"{deleteTarget.title}"</span>? This action cannot be undone.
-            </p>
-            <div className="flex gap-4">
-              <button 
-                onClick={() => setDeleteTarget(null)}
-                className="flex-1 px-4 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-bold transition-colors"
-              >
-                Cancel
-              </button>
-              <button 
-                onClick={() => handleDeleteResource(deleteTarget.id, deleteTarget.courseId)}
-                className="flex-1 px-4 py-3 bg-red-500 hover:bg-red-600 text-white rounded-xl font-bold transition-all shadow-lg shadow-red-200"
-              >
-                Delete
-              </button>
+          <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-[60] flex items-center justify-center p-4">
+            <div className="bg-white rounded-2xl p-6 max-w-sm w-full animate-in zoom-in-95 duration-200">
+              <h3 className="text-xl font-bold text-slate-900 mb-2">Are you sure?</h3>
+              <p className="text-slate-600 mb-6">
+                {deleteTarget.type === 'resource' 
+                  ? 'This will permanently remove this resource from the course.'
+                  : deleteTarget.type === 'course'
+                  ? 'This will permanently delete the course and all its resources. This action cannot be undone.'
+                  : 'This will permanently delete this user account. This action cannot be undone.'}
+              </p>
+              <div className="flex gap-3">
+                <button 
+                  onClick={() => setDeleteTarget(null)}
+                  className="flex-1 px-4 py-2 border border-slate-200 text-slate-600 rounded-lg hover:bg-slate-50 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button 
+                  onClick={() => {
+                    if (deleteTarget.type === 'resource') handleDeleteResource(deleteTarget.id, deleteTarget.courseId);
+                    else if (deleteTarget.type === 'course') handleDeleteCourse(deleteTarget.id);
+                    else if (deleteTarget.type === 'user') handleDeleteUser(deleteTarget.id);
+                  }}
+                  disabled={loadingDeletion[deleteTarget.id]}
+                  className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors flex items-center justify-center gap-2"
+                >
+                  {loadingDeletion[deleteTarget.id] ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Delete'}
+                </button>
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
     </div>
   );
 }

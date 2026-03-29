@@ -13,7 +13,11 @@ app.use(express.json());
 
 // Request logger for debugging
 app.use((req, res, next) => {
-  console.log(`${req.method} ${req.url}`);
+  const start = Date.now();
+  res.on('finish', () => {
+    const duration = Date.now() - start;
+    console.log(`${req.method} ${req.originalUrl} ${res.statusCode} - ${duration}ms`);
+  });
   next();
 });
 

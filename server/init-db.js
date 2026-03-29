@@ -23,7 +23,7 @@ const pool = new Pool(poolConfig);
 const runSchema = async () => {
     try {
         console.log('📖 Reading schema.sql...');
-        const schemaPath = path.join(__dirname, '..', 'schema.sql');
+        const schemaPath = path.join(__dirname, 'schema.sql');
         let schema = fs.readFileSync(schemaPath, 'utf8');
 
         // Add drops at the beginning to ensure a clean slate for the first-time setup

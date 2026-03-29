@@ -6,11 +6,13 @@ function LandingPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 flex flex-col relative overflow-hidden">
       {/* Background Decor */}
-      <div className="absolute top-[-10%] left-[-10%] w-96 h-96 bg-brand-500/20 rounded-full blur-[100px]" />
-      <div className="absolute bottom-[-10%] right-[-10%] w-96 h-96 bg-accent-500/20 rounded-full blur-[100px]" />
+      <div className="absolute top-[-10%] left-[-10%] w-96 h-96 bg-brand-500/20 rounded-full blur-[100px] pointer-events-none" />
+      <div className="absolute bottom-[-10%] right-[-10%] w-96 h-96 bg-accent-500/20 rounded-full blur-[100px] pointer-events-none" />
+
 
       {/* Navbar */}
-      <nav className="w-full glass z-10 sticky top-0 px-6 py-4 flex justify-between items-center">
+      <nav className="w-full glass z-50 sticky top-0 px-6 py-4 flex justify-between items-center">
+
         <div className="flex items-center gap-2">
           <BookOpen className="w-8 h-8 text-brand-600" />
           <span className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-brand-600 to-brand-900">

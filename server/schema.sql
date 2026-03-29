@@ -20,7 +20,8 @@ CREATE TABLE courses (
     id SERIAL PRIMARY KEY,
     title VARCHAR(150) NOT NULL,
     description TEXT,
-    stream_target stream_type
+    stream_target stream_type,
+    rich_content TEXT
 );
 
 CREATE TABLE resources (

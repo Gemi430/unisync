@@ -125,10 +125,10 @@ exports.getProfile = async (req, res) => {
 // Update student profile
 exports.updateProfile = async (req, res) => {
     try {
-        const { name, bio, avatar_url } = req.body;
+        const { name, bio, avatar_url, stream } = req.body;
         const result = await db.query(
-            "UPDATE users SET name = $1, bio = $2, avatar_url = $3 WHERE id = $4 RETURNING name, email, stream, avatar_url, bio",
-            [name, bio, avatar_url, req.user.id]
+            "UPDATE users SET name = $1, bio = $2, avatar_url = $3, stream = $4 WHERE id = $5 RETURNING name, email, stream, avatar_url, bio",
+            [name, bio, avatar_url, stream, req.user.id]
         );
         res.json(result.rows[0]);
     } catch (err) {

@@ -433,9 +433,15 @@ function StudentDashboard() {
                   </div>
                   <h3 className="text-xl font-bold text-slate-900">{profile.name}</h3>
                   <p className="text-slate-500 text-sm mb-4">{profile.email}</p>
-                  <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase ${profile.status === 'approved' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}`}>
-                    {profile.status}
-                  </span>
+                  <div className="flex flex-col gap-2 items-center">
+                    <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase ${profile.status === 'approved' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}`}>
+                      Account: {profile.status}
+                    </span>
+                    <span className="px-3 py-1 rounded-full text-xs font-bold uppercase bg-brand-100 text-brand-700">
+                      Stream: {profile.stream || 'Not Set'}
+                    </span>
+                  </div>
+
                 </div>
               </div>
 
@@ -463,9 +469,21 @@ function StudentDashboard() {
                       />
                     </div>
                     <div>
+                      <label className="block text-sm font-semibold text-slate-700 mb-2">Academic Stream</label>
+                      <select 
+                        disabled={!isEditing}
+                        value={profile.stream || 'natural'}
+                        onChange={(e) => setProfile({...profile, stream: e.target.value})}
+                        className="w-full px-4 py-3 rounded-xl border border-slate-200 outline-none bg-white/50 focus:border-brand-500 disabled:opacity-60 transition-all font-medium"
+                      >
+                        <option value="natural">Natural Science</option>
+                        <option value="social">Social Science</option>
+                      </select>
+                    </div>
+                    <div>
                       <label className="block text-sm font-semibold text-slate-700 mb-2">Biography</label>
                       <textarea 
-                        rows="4"
+                        rows="3"
                         disabled={!isEditing}
                         value={profile.bio || ''}
                         onChange={(e) => setProfile({...profile, bio: e.target.value})}
@@ -473,6 +491,7 @@ function StudentDashboard() {
                         className="w-full px-4 py-3 rounded-xl border border-slate-200 outline-none bg-white/50 focus:border-brand-500 disabled:opacity-60 transition-all font-medium resize-none"
                       ></textarea>
                     </div>
+
                     <div>
                       <label className="block text-sm font-semibold text-slate-700 mb-2">Avatar URL (Optional)</label>
                       <input 

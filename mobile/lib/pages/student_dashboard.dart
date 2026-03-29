@@ -910,21 +910,54 @@ class _StudentDashboardState extends State<StudentDashboard> {
               const SizedBox(height: 4),
               Text(_profile!['email'] ?? '', style: const TextStyle(color: Color(0xFF64748B))),
               const SizedBox(height: 12),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                decoration: BoxDecoration(
-                  color: (_profile!['status'] == 'approved') ? Colors.green.shade100 : Colors.yellow.shade100,
-                  borderRadius: BorderRadius.circular(16)
-                ),
-                child: Text(
-                  (_profile!['status'] ?? 'pending').toString().toUpperCase(),
-                  style: TextStyle(
-                    fontSize: 12, 
-                    fontWeight: FontWeight.bold, 
-                    color: (_profile!['status'] == 'approved') ? Colors.green.shade700 : Colors.yellow.shade700
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: (_profile!['status'] == 'approved') ? Colors.green.shade100 : Colors.yellow.shade100,
+                      borderRadius: BorderRadius.circular(16)
+                    ),
+                    child: Text(
+                      (_profile!['status'] ?? 'pending').toString().toUpperCase(),
+                      style: TextStyle(
+                        fontSize: 10, 
+                        fontWeight: FontWeight.bold, 
+                        color: (_profile!['status'] == 'approved') ? Colors.green.shade700 : Colors.yellow.shade700
+                      ),
+                    ),
                   ),
+                  const SizedBox(width: 8),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: AppTheme.brand100,
+                      borderRadius: BorderRadius.circular(16)
+                    ),
+                    child: Text(
+                      'STREAM: ${(_profile!['stream'] ?? 'natural').toString().toUpperCase()}',
+                      style: const TextStyle(
+                        fontSize: 10, 
+                        fontWeight: FontWeight.bold, 
+                        color: AppTheme.brand700
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              if (_profile!['bio'] != null && _profile!['bio'].toString().isNotEmpty) ...[
+                const SizedBox(height: 24),
+                const Divider(),
+                const SizedBox(height: 16),
+                const Text('Biography', style: TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF1E293B))),
+                const SizedBox(height: 8),
+                Text(
+                  _profile!['bio'],
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(color: Color(0xFF64748B), fontSize: 14),
                 ),
-              )
+              ],
             ],
           ),
         ),

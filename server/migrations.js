@@ -22,9 +22,10 @@ const runMigrations = async () => {
         await db.query(`
             ALTER TABLE users 
             ADD COLUMN IF NOT EXISTS avatar_url VARCHAR(255),
-            ADD COLUMN IF NOT EXISTS bio TEXT;
+            ADD COLUMN IF NOT EXISTS bio TEXT,
+            ADD COLUMN IF NOT EXISTS stream VARCHAR(50);
         `);
-        console.log('✅ Migration Check: Profile columns are ready.');
+        console.log('✅ Migration Check: Profile columns (including stream) are ready.');
     } catch (err) {
         console.error('❌ Migration failed:', err.message);
         throw err; // Re-throw to prevent server startup on failure

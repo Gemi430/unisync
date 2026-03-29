@@ -1,5 +1,4 @@
 const db = require('../config/db');
-const emailService = require('../services/emailService');
 
 // Get all students
 exports.getAllStudents = async (req, res) => {
@@ -48,10 +47,10 @@ exports.updateStudentStatus = async (req, res) => {
 
         const student = result.rows[0];
 
-        // Trigger welcome email if approved
-        if (status === 'approved') {
+        // Trigger welcome email removed for performance
+        /* if (status === 'approved') {
             await emailService.sendWelcomeEmail(student.email, student.name);
-        }
+        } */
 
         // Add database notification
         await db.query(

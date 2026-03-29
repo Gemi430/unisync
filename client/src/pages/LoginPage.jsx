@@ -77,7 +77,7 @@ function LoginPage() {
           <button 
             type="submit"
             disabled={loading}
-            className={`w-full ${loading ? 'bg-brand-300 cursor-not-allowed' : 'bg-brand-600 hover:bg-brand-700'} text-white font-semibold py-4 rounded-xl transition-all hover:shadow-lg transform hover:-translate-y-0.5 flex items-center justify-center gap-3`}
+            className={`w-full ${loading ? 'bg-brand-900 cursor-not-allowed' : 'bg-brand-600 hover:bg-brand-500'} text-white font-semibold py-4 rounded-xl transition-all hover:shadow-lg transform hover:-translate-y-0.5 flex items-center justify-center gap-3`}
           >
             {loading ? (
               <>

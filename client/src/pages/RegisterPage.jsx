@@ -120,7 +120,7 @@ function RegisterPage() {
           <button 
             type="submit"
             disabled={loading}
-            className={`w-full ${loading ? 'bg-slate-400 cursor-not-allowed' : 'bg-slate-900 hover:bg-slate-800'} text-white font-semibold py-4 rounded-xl mt-6 transition-all hover:shadow-lg transform hover:-translate-y-0.5 flex items-center justify-center gap-3`}
+            className={`w-full ${loading ? 'bg-slate-600 cursor-not-allowed' : 'bg-slate-900 hover:bg-slate-800'} text-white font-semibold py-4 rounded-xl mt-6 transition-all hover:shadow-lg transform hover:-translate-y-0.5 flex items-center justify-center gap-3`}
           >
             {loading ? (
               <>

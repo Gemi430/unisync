@@ -1,7 +1,6 @@
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const db = require('../config/db');
-const emailService = require('../services/emailService');
 
 // Register a new student
 exports.registerStudent = async (req, res) => {
@@ -34,8 +33,8 @@ exports.registerStudent = async (req, res) => {
             [name, email, passwordHash, 'student', stream, paymentReceiptUrl, 'pending']
         );
 
-        // Send registration email
-        await emailService.sendRegistrationEmail(email, name);
+        // Email functionality removed for performance
+        // await emailService.sendRegistrationEmail(email, name);
 
         res.status(201).json({ message: 'Registration successful. Waiting for admin approval.', user: newUser.rows[0] });
     } catch (err) {

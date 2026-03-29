@@ -7,6 +7,22 @@ dotenv.config();
 
 const app = express();
 
+// --- DATABASE AUTO-INITIALIZATION FOR RENDER ---
+if (process.env.INIT_DB === 'true') {
+  console.log('👷 INIT_DB is true. Running database setup...');
+  const { exec } = require('child_process');
+  exec('node init-db.js', (error, stdout, stderr) => {
+    if (error) {
+      console.error(`❌ DB Initialization Failed: ${error.message}`);
+      return;
+    }
+    if (stderr) console.error(`⚠️ DB Init Stderr: ${stderr}`);
+    console.log(`✅ DB Init Output: ${stdout}`);
+    console.log('🚀 Database ready. Please remove INIT_DB environment variable now.');
+  });
+}
+// ---------------------------------------------
+
 // Middleware
 app.use(cors());
 app.use(express.json());

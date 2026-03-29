@@ -43,7 +43,7 @@ class _RegisterPageState extends State<RegisterPage> {
       setState(() => _isLoading = true);
 
       try {
-        var uri = Uri.parse('http://10.232.92.162:5000/api/auth/register'); // Standard localhost for edge/windows
+        var uri = Uri.parse('https://uni-resource-backend.onrender.com/api/auth/register'); // Standard localhost for edge/windows
         var request = http.MultipartRequest('POST', uri);
         
         request.fields['name'] = _nameController.text;

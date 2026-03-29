@@ -72,7 +72,7 @@ class _StudentDashboardState extends State<StudentDashboard> {
   Future<void> _fetchProfile() async {
     try {
       final res = await http.get(
-        Uri.parse('http://10.232.92.162:5000/api/student/profile'),
+        Uri.parse('https://uni-resource-backend.onrender.com/api/student/profile'),
         headers: {'Authorization': 'Bearer $_token'},
       );
       if (res.statusCode == 200) {
@@ -86,7 +86,7 @@ class _StudentDashboardState extends State<StudentDashboard> {
   Future<void> _fetchCourses() async {
     try {
       final res = await http.get(
-        Uri.parse('http://10.232.92.162:5000/api/student/courses'),
+        Uri.parse('https://uni-resource-backend.onrender.com/api/student/courses'),
         headers: {'Authorization': 'Bearer $_token'},
       );
       if (res.statusCode == 200) {
@@ -100,7 +100,7 @@ class _StudentDashboardState extends State<StudentDashboard> {
   Future<void> _fetchAnalytics() async {
     try {
       final res = await http.get(
-        Uri.parse('http://10.232.92.162:5000/api/student/analytics'),
+        Uri.parse('https://uni-resource-backend.onrender.com/api/student/analytics'),
         headers: {'Authorization': 'Bearer $_token'},
       );
       if (res.statusCode == 200) {
@@ -121,11 +121,11 @@ class _StudentDashboardState extends State<StudentDashboard> {
 
     try {
       final resResources = await http.get(
-        Uri.parse('http://10.232.92.162:5000/api/student/courses/$courseId/resources'),
+        Uri.parse('https://uni-resource-backend.onrender.com/api/student/courses/$courseId/resources'),
         headers: {'Authorization': 'Bearer $_token'},
       );
       final resQuizzes = await http.get(
-        Uri.parse('http://10.232.92.162:5000/api/student/courses/$courseId/quizzes'),
+        Uri.parse('https://uni-resource-backend.onrender.com/api/student/courses/$courseId/quizzes'),
         headers: {'Authorization': 'Bearer $_token'},
       );
       
@@ -146,7 +146,7 @@ class _StudentDashboardState extends State<StudentDashboard> {
 
     try {
       final res = await http.get(
-        Uri.parse('http://10.232.92.162:5000/api/student/quizzes/$quizId/questions'),
+        Uri.parse('https://uni-resource-backend.onrender.com/api/student/quizzes/$quizId/questions'),
         headers: {'Authorization': 'Bearer $_token'},
       );
       if (res.statusCode == 200) {
@@ -172,7 +172,7 @@ class _StudentDashboardState extends State<StudentDashboard> {
     setState(() => _isLoadingSubView = true);
     try {
       final res = await http.post(
-        Uri.parse('http://10.232.92.162:5000/api/student/quizzes/$_activeQuizId/submit'),
+        Uri.parse('https://uni-resource-backend.onrender.com/api/student/quizzes/$_activeQuizId/submit'),
         headers: {'Authorization': 'Bearer $_token', 'Content-Type': 'application/json'},
         body: json.encode({'answers': _answers}),
       );
@@ -206,7 +206,7 @@ class _StudentDashboardState extends State<StudentDashboard> {
     var match = RegExp(r'uploads[/\\](.+)$').firstMatch(path);
     var cleanPath = match != null ? 'uploads/${match.group(1)}' : path;
     
-    return 'http://10.232.92.162:5000/$cleanPath';
+    return 'https://uni-resource-backend.onrender.com/$cleanPath';
   }
 
   Future<void> _openResource(Map<String, dynamic> resource) async {

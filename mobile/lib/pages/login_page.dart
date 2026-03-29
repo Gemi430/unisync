@@ -30,7 +30,7 @@ class _LoginPageState extends State<LoginPage> {
       setState(() => _isLoading = true);
 
       try {
-        var uri = Uri.parse('http://10.232.92.162:5000/api/auth/login');
+        var uri = Uri.parse('https://uni-resource-backend.onrender.com/api/auth/login');
         
         var response = await http.post(
           uri,

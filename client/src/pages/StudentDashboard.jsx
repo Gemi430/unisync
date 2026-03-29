@@ -188,7 +188,7 @@ function StudentDashboard() {
       // Remove leading slash if it exists before the URL
       return cleanPath.startsWith('/') ? cleanPath.substring(1) : cleanPath;
     }
-    return `http://localhost:5000/${cleanPath}`;
+    return `https://uni-resource-backend.onrender.com/${cleanPath}`;
   };
 
   const handleOpenResource = async (resource) => {

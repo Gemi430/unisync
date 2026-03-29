@@ -393,7 +393,7 @@ function AdminDashboard() {
                           const rawPath = String(student.payment_receipt_url || '').trim();
                           const uploadsMatch = rawPath.match(/uploads[/\\](.+)$/);
                           const cleanPath = uploadsMatch ? `uploads/${uploadsMatch[1]}` : rawPath;
-                          const fullUrl = /^\/?(https?:)?\/\//.test(cleanPath) ? (cleanPath.startsWith('/') ? cleanPath.substring(1) : cleanPath) : `http://localhost:5000/${cleanPath}`;
+                          const fullUrl = /^\/?(https?:)?\/\//.test(cleanPath) ? (cleanPath.startsWith('/') ? cleanPath.substring(1) : cleanPath) : `https://uni-resource-backend.onrender.com/${cleanPath}`;
                           
                           return (
                             <a 

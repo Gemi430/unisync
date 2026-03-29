@@ -17,6 +17,7 @@ class _LoginPageState extends State<LoginPage> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _isLoading = false;
+  bool _obscurePassword = true;
 
   @override
   void dispose() {
@@ -174,7 +175,9 @@ class _LoginPageState extends State<LoginPage> {
                                 label: 'Password',
                                 hint: '••••••••',
                                 controller: _passwordController,
-                                obscureText: true,
+                                obscureText: _obscurePassword,
+                                isPasswordField: true,
+                                onToggleObscure: () => setState(() => _obscurePassword = !_obscurePassword),
                                 validator: (val) => val!.isEmpty ? 'Password is required' : null,
                               ),
                               const SizedBox(height: 32),
@@ -224,6 +227,8 @@ class _LoginPageState extends State<LoginPage> {
     required String hint,
     required TextEditingController controller,
     bool obscureText = false,
+    bool isPasswordField = false,
+    VoidCallback? onToggleObscure,
     TextInputType? keyboardType,
     String? Function(String?)? validator,
   }) {
@@ -245,6 +250,14 @@ class _LoginPageState extends State<LoginPage> {
             enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFFE2E8F0))),
             focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: AppTheme.brand500, width: 2)),
             contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+            suffixIcon: isPasswordField ? IconButton(
+              icon: Icon(
+                obscureText ? Icons.visibility_off : Icons.visibility,
+                color: const Color(0xFF64748B),
+                size: 20,
+              ),
+              onPressed: onToggleObscure,
+            ) : null,
           ),
         ),
       ],

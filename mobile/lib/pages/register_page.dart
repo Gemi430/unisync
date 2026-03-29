@@ -19,6 +19,7 @@ class _RegisterPageState extends State<RegisterPage> {
   final _nameController = TextEditingController();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+  bool _obscurePassword = true;
   PlatformFile? _selectedFile;
 
   @override
@@ -205,7 +206,9 @@ class _RegisterPageState extends State<RegisterPage> {
                                 label: 'Password',
                                 hint: '••••••••',
                                 controller: _passwordController,
-                                obscureText: true,
+                                obscureText: _obscurePassword,
+                                isPasswordField: true,
+                                onToggleObscure: () => setState(() => _obscurePassword = !_obscurePassword),
                                 validator: (val) => val!.length < 6 ? 'Password too short' : null,
                               ),
                               const SizedBox(height: 16),
@@ -307,6 +310,8 @@ class _RegisterPageState extends State<RegisterPage> {
     required String hint,
     required TextEditingController controller,
     bool obscureText = false,
+    bool isPasswordField = false,
+    VoidCallback? onToggleObscure,
     TextInputType? keyboardType,
     String? Function(String?)? validator,
   }) {
@@ -327,6 +332,14 @@ class _RegisterPageState extends State<RegisterPage> {
             border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFFE2E8F0))),
             enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFFE2E8F0))),
             contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+            suffixIcon: isPasswordField ? IconButton(
+              icon: Icon(
+                obscureText ? Icons.visibility_off : Icons.visibility,
+                color: const Color(0xFF64748B),
+                size: 20,
+              ),
+              onPressed: onToggleObscure,
+            ) : null,
           ),
         ),
       ],

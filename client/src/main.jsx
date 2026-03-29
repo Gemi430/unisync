@@ -4,9 +4,7 @@ import axios from 'axios';
 import './index.css'
 import App from './App.jsx'
 
-axios.defaults.baseURL = import.meta.env.MODE === 'development' 
-  ? 'http://localhost:5000' 
-  : 'https://uni-resource-backend.onrender.com';
+axios.defaults.baseURL = 'https://uni-resource-backend.onrender.com';
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>

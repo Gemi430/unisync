@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import toast from 'react-hot-toast';
+import { Eye, EyeOff } from 'lucide-react';
 
 function RegisterPage() {
   const [formData, setFormData] = useState({
@@ -11,6 +12,7 @@ function RegisterPage() {
     stream: 'natural'
   });
   const [receipt, setReceipt] = useState(null);
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
@@ -92,16 +94,26 @@ function RegisterPage() {
               onChange={handleInputChange}
             />
           </div>
-          <div>
+          <div className="relative">
             <label className="block text-sm font-medium text-slate-700 mb-2">Password</label>
-            <input 
-              type="password" 
-              name="password"
-              required
-              className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-brand-500 outline-none bg-white/50"
-              placeholder="••••••••"
-              onChange={handleInputChange}
-            />
+            <div className="relative">
+              <input 
+                type={showPassword ? 'text' : 'password'} 
+                name="password"
+                required
+                className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-brand-500 outline-none bg-white/50 pr-12"
+                placeholder="••••••••"
+                onChange={handleInputChange}
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-brand-500 transition-colors"
+                tabIndex="-1"
+              >
+                {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+              </button>
+            </div>
           </div>
 
           <div>

@@ -1,6 +1,7 @@
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const db = require('../config/db');
+const emailService = require('../services/emailService');
 
 // Register a new student
 exports.registerStudent = async (req, res) => {
@@ -30,6 +31,9 @@ exports.registerStudent = async (req, res) => {
             'INSERT INTO users (name, email, password_hash, role, stream, payment_receipt_url, status) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id, name, email, role, stream, status',
             [name, email, passwordHash, 'student', stream, paymentReceiptUrl, 'pending']
         );
+
+        // Send registration email
+        await emailService.sendRegistrationEmail(email, name);
 
         res.status(201).json({ message: 'Registration successful. Waiting for admin approval.', user: newUser.rows[0] });
     } catch (err) {

@@ -13,6 +13,8 @@ CREATE TABLE users (
     stream stream_type,
     payment_receipt_url VARCHAR(255),
     status approval_status DEFAULT 'pending',
+    avatar_url VARCHAR(255),
+    bio TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 

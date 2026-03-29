@@ -20,7 +20,7 @@ function App() {
               <Route path="/" element={<LandingPage />} />
               <Route path="/login" element={<LoginPage />} />
               <Route path="/register" element={<RegisterPage />} />
-              <Route path="/admin-register" element={<RegisterPage isAdmin={true} />} />
+              <Route path="/admin-register" element={<AdminRegisterPage />} />
               <Route path="/admin" element={<AdminDashboard />} />
               <Route path="/student" element={<StudentDashboard />} />
             </Routes>

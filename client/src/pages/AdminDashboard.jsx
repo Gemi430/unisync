@@ -767,7 +767,7 @@ function AdminDashboard() {
               {/* User Status Pie Chart */}
               <div className="glass p-6 rounded-2xl min-h-[400px] flex flex-col">
                 <h3 className="text-xl font-bold text-slate-800 mb-6">Student Enrollment Status</h3>
-                <div className="flex-1 min-h-[300px] w-full">
+                <div className="flex-1 h-[300px] w-full">
                   <ResponsiveContainer width="100%" height="100%">
                     <PieChart>
                       <Pie
@@ -795,7 +795,7 @@ function AdminDashboard() {
               {/* Quiz Performance Bar Chart */}
               <div className="glass p-6 rounded-2xl min-h-[400px] flex flex-col">
                 <h3 className="text-xl font-bold text-slate-800 mb-6">Quiz Performance (Avg %)</h3>
-                <div className="flex-1 min-h-[300px] w-full">
+                <div className="flex-1 h-[300px] w-full">
                    {analytics.performance.length > 0 ? (
                       <ResponsiveContainer width="100%" height="100%">
                         <BarChart data={analytics.performance}>

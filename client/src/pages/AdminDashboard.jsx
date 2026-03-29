@@ -406,13 +406,22 @@ function AdminDashboard() {
           >
             <BarChart3 className="w-5 h-5" /> Progress
           </button>
-          <button onClick={() => { setActiveTab('approvals'); localStorage.setItem('adminActiveTab', 'approvals'); }} className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${activeTab === 'approvals' ? 'bg-brand-600 text-white' : 'text-slate-600 hover:bg-slate-100'}`}>
-            <UserCheck className="w-5 h-5" /> Reg Approvals
+          <button 
+            onClick={() => {setActiveTab('approvals'); setIsSidebarOpen(false);}}
+            className={`flex items-center gap-3 w-full px-4 py-3 rounded-xl transition-colors ${activeTab === 'approvals' ? 'bg-brand-100 text-brand-700 font-semibold' : 'text-slate-600 hover:bg-slate-100'}`}
+          >
+            <UserCheck className="w-5 h-5" /> Approvals
           </button>
-          <button onClick={() => { setActiveTab('students'); localStorage.setItem('adminActiveTab', 'students'); }} className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${activeTab === 'students' ? 'bg-brand-600 text-white' : 'text-slate-600 hover:bg-slate-100'}`}>
-            <UserCog className="w-5 h-5" /> User Management
+          <button 
+            onClick={() => {setActiveTab('students'); setIsSidebarOpen(false);}}
+            className={`flex items-center gap-3 w-full px-4 py-3 rounded-xl transition-colors ${activeTab === 'students' ? 'bg-brand-100 text-brand-700 font-semibold' : 'text-slate-600 hover:bg-slate-100'}`}
+          >
+            <UserCog className="w-5 h-5" /> Users
           </button>
-          <button onClick={() => { setActiveTab('courses'); localStorage.setItem('adminActiveTab', 'courses'); }} className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${activeTab === 'courses' ? 'bg-brand-600 text-white' : 'text-slate-600 hover:bg-slate-100'}`}>
+          <button 
+            onClick={() => {setActiveTab('courses'); setIsSidebarOpen(false);}}
+            className={`flex items-center gap-3 w-full px-4 py-3 rounded-xl transition-colors ${activeTab === 'courses' ? 'bg-brand-100 text-brand-700 font-semibold' : 'text-slate-600 hover:bg-slate-100'}`}
+          >
             <BookOpen className="w-5 h-5" /> Courses
           </button>
           <button 

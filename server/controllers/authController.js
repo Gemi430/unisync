@@ -33,8 +33,8 @@ exports.registerStudent = async (req, res) => {
             [name, email, passwordHash, 'student', stream, paymentReceiptUrl, 'pending']
         );
 
-        // Email functionality removed for performance
-        // await emailService.sendRegistrationEmail(email, name);
+        // Registration successful
+
 
         res.status(201).json({ message: 'Registration successful. Waiting for admin approval.', user: newUser.rows[0] });
     } catch (err) {

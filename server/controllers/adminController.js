@@ -47,10 +47,8 @@ exports.updateStudentStatus = async (req, res) => {
 
         const student = result.rows[0];
 
-        // Trigger welcome email removed for performance
-        /* if (status === 'approved') {
-            await emailService.sendWelcomeEmail(student.email, student.name);
-        } */
+        // Account updated
+
 
         // Add database notification
         await db.query(

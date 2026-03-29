@@ -225,10 +225,15 @@ class _StudentDashboardState extends State<StudentDashboard> {
       return;
     }
 
+    String finalUrl = urlString;
+    if (urlString.toLowerCase().endsWith('.pdf')) {
+      finalUrl = 'https://docs.google.com/viewer?url=${Uri.encodeComponent(urlString)}&embedded=true';
+    }
+
     final controller = WebViewController()
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
       ..setBackgroundColor(Colors.white)
-      ..loadRequest(Uri.parse(urlString));
+      ..loadRequest(Uri.parse(finalUrl));
 
     showDialog(
       context: context,

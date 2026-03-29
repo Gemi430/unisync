@@ -790,10 +790,11 @@ function StudentDashboard() {
                     />
                 ) : viewingResource.file_url.split('.').pop().toLowerCase() === 'pdf' ? (
                    <iframe 
-                      src={`${getFullUrl(viewingResource.file_url)}#toolbar=0&navpanes=0&scrollbar=0`} 
+                      src={`https://docs.google.com/viewer?url=${encodeURIComponent(getFullUrl(viewingResource.file_url))}&embedded=true`} 
                       className="w-full h-full bg-white rounded-xl shadow-inner border-0"
                       title={viewingResource.title}
                    />
+
                 ) : (
                    <div className="flex flex-col items-center justify-center h-full text-slate-500">
                       <BookOpen className="w-16 h-16 mb-4 opacity-20" />
